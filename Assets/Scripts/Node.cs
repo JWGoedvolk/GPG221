@@ -1,7 +1,8 @@
 using UnityEngine;
 using TMPro;
+using System;
 
-public class Node
+public class Node : IComparable
 {
     public Node Parent { get; set; }
     public Vector3 WorldPosition { get; set; }
@@ -66,5 +67,21 @@ public class Node
         WorldPosition = worldPosition;
         GridPosition = gridPosition;
         IsWalkable = isWalkable;
+    }
+
+    public int CompareTo(object obj)
+    {
+        Node node = (Node)obj;
+
+        if (node.FCost > FCost)
+        {
+            return -1;
+        }
+        else if (node.FCost < FCost)
+        {
+            return 1;
+        }
+
+        return 0;
     }
 }

@@ -4,10 +4,10 @@ public class Grid : MonoBehaviour
 {
     Node[] grid;
 
-    [SerializeField] int gridCountX;
-    [SerializeField] int gridCountY;
-    [SerializeField] int cellSizeX;
-    [SerializeField] int cellSizeY;
+    [SerializeField] public int gridCountX;
+    [SerializeField] public int gridCountY;
+    [SerializeField] public int cellSizeX;
+    [SerializeField] public int cellSizeY;
     [SerializeField] GameObject nodePrefab;
     int totalNodes;
 
@@ -37,6 +37,23 @@ public class Grid : MonoBehaviour
 
             }
         }
+    }
+
+    public Node GetNode(Vector3 worldPosition)
+    {
+        Vector3Int gridPosition = new Vector3Int((int)(worldPosition.x / cellSizeX), 0, (int)(worldPosition.y / cellSizeY));
+        int i = gridPosition.x + gridPosition.z * gridCountX;
+        return grid[i];
+    }
+
+    public Vector3Int WorldToGridPosition(Vector3 worldPosition)
+    {
+        return new Vector3Int((int)(worldPosition.x / cellSizeX), 0, (int)(worldPosition.y / cellSizeY));
+    }
+
+    public Vector3Int GridToWorlPosition(Vector3Int gridPosition)
+    {
+        return new Vector3Int((int)(gridPosition.x * cellSizeX), 0, (int)(gridPosition.y * cellSizeY));
     }
 
     // Update is called once per frame

@@ -9,11 +9,15 @@ public class Node : IComparable
     public Vector3Int GridPosition { get; set; }
     public bool IsWalkable { get; private set; }
 
-#if ASTAR_DEBUG 
+#if ASTAR_DEBUG
     private GameObject nodeGO;
     public TMP_Text gCostText;
     public TMP_Text hCostText;
     public TMP_Text fCostText;
+
+    [SerializeField] Color gColor = new Color(1, 0, 0);
+    [SerializeField] Color hColor = new Color(0, 1, 0);
+    [SerializeField] Color fColor = new Color(0, 0, 1);
 
     public GameObject NodeGO
     {
@@ -21,10 +25,15 @@ public class Node : IComparable
         set 
         { 
             nodeGO = value; 
+            
             gCostText = nodeGO.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>();
-            hCostText = nodeGO.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>();
-            fCostText = nodeGO.transform.GetChild(0).GetChild(2).GetComponent<TMP_Text>();
+            gCostText.color = gColor;
 
+            hCostText = nodeGO.transform.GetChild(0).GetChild(1).GetComponent<TMP_Text>();
+            hCostText.color = hColor;
+
+            fCostText = nodeGO.transform.GetChild(0).GetChild(2).GetComponent<TMP_Text>();
+            fCostText.color = fColor;
         }
     }
 #endif
@@ -35,11 +44,11 @@ public class Node : IComparable
         get { return gCost; }
         set
         {
+            gCost = value;
 #if ASTAR_DEBUG
             gCostText.text = value.ToString();
             fCostText.text = FCost.ToString();
 #endif
-            gCost = value;
         }
     }
 
@@ -49,11 +58,11 @@ public class Node : IComparable
         get { return hCost; }
         set
         {
+            hCost = value;
 #if ASTAR_DEBUG
             hCostText.text = value.ToString();
             fCostText.text = FCost.ToString();
 #endif
-            hCost = value;
         }
     }
 

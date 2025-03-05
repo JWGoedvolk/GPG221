@@ -43,6 +43,7 @@ namespace JW.Grid
 #if ASTAR_DEBUG
                     var node = Instantiate(nodePrefab, worldPosition, nodePrefab.transform.rotation);
                     node.transform.localScale = new Vector3(cellSizeX, 1, cellSizeY);
+                    node.transform.parent = transform; // This makes the spawned node object a child of the grid object, helping the hierarchy stay clean
                     grid[i].NodeGO = node;
 
                     if (!isWalkable)

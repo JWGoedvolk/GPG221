@@ -5,15 +5,15 @@ using AStarGrid = JW.Grid.AStarGrid;
 
 public class AStar : MonoBehaviour
 {
-    // TODO: optimize by removing close list
     // TODO: optimize by checking if the neighbour is the goal node
 
     public delegate void onPathFound();
     public onPathFound PathFound;
+    bool pathWasFound = false;
+
     AStarGrid grid;
 
     List<Node> openList = new();
-    List<Node> closeList = new();
     public List<Node> finalPath = new();
     [SerializeField] Vector3 startPosition;
     [SerializeField] Vector3 endPosition;
@@ -27,8 +27,8 @@ public class AStar : MonoBehaviour
     [SerializeField] Color startColor;
     [SerializeField] Color endColor;
     [SerializeField] Color currentColor;
-#endif
     [SerializeField] float sphereSize = 0.1f;
+#endif
 
     void Start()
     {
@@ -50,14 +50,16 @@ public class AStar : MonoBehaviour
     {
 #if ASTAR_DEBUG
         if (Input.GetKeyDown(KeyCode.Space))
+#else
+        while (openList.Count > 0 && !pathWasFound)
 #endif
         {
             openList.Sort(); // Sort the list to have the first element be the Node with the lowest F cost, which is the shortest path so far
             currentNode = openList[0];
             openList.Remove(currentNode); // We have looked at this node so take it out of the list of cells to visit
-            closeList.Add(currentNode);   // and put it in the list of visited nodes
+            currentNode.IsVisited = true;
 
-            if (currentNode == goalNode) // Have we reached the end yet?
+            if (currentNode == goalNode || pathWasFound) // Have we reached the end yet?
             {
                 FindFinalPath(goalNode); // Trace the path
                 print("Path Found!");
@@ -118,7 +120,9 @@ public class AStar : MonoBehaviour
 #if ASTAR_DEBUG
                 neighbours[i].NodeGO.GetComponent<Renderer>().material.color = Color.red;
 #endif
-                if (!neighbours[i].IsWalkable || closeList.Contains(neighbours[i])) // Go to next neighbour imediatly if this one is unwalkable or has been visited before
+                
+
+                if (!neighbours[i].IsWalkable || neighbours[i].IsVisited) // Go to next neighbour imediatly if this one is unwalkable or has been visited before
                 {
                     continue;
                 }
@@ -136,6 +140,17 @@ public class AStar : MonoBehaviour
                     {
                         openList.Add(neighbours[i]);
                     }
+                }
+
+                // If the neighbour is the goal, then don't bother continuing and go straight to the goal
+                if (neighbours[i] == goalNode)
+                {
+                    pathWasFound = true;
+                    FindFinalPath(neighbours[i]);
+                    print("Path Found!");
+                    finalPath.Reverse(); // Reverse the found path as it traces back from the goal to the start. we want it from the start to the goal
+                    PathFound(); // Dellegaate to let the AI know it can start moving
+                    break;
                 }
             }
         }
@@ -158,6 +173,7 @@ public class AStar : MonoBehaviour
         }
     }
 
+#if ASTAR_DEBUG
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.green;
@@ -168,5 +184,6 @@ public class AStar : MonoBehaviour
 
         Gizmos.color = Color.magenta;
         if (currentNode != null) Gizmos.DrawSphere(currentNode.WorldPosition, sphereSize);
-    }
+    } 
+#endif
 }

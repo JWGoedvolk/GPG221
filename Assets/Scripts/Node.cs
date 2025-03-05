@@ -8,6 +8,7 @@ public class Node : IComparable
     public Vector3 WorldPosition { get; set; }
     public Vector3Int GridPosition { get; set; }
     public bool IsWalkable { get; private set; }
+    public bool IsVisited;
 
 #if ASTAR_DEBUG
     private GameObject nodeGO;

@@ -77,6 +77,19 @@ namespace JW.Grid
         }
 
 #if ASTAR_DEBUG
+        public void RestartGrid()
+        {
+            for (int y= 0; y < gridCountY; y++)
+            {
+                for (int x= 0; x < gridCountX; x++)
+                {
+                    int i = y * gridCountX + x;
+
+                    grid[i].NodeGO.GetComponent<Renderer>().material.color = Color.black;
+                }
+            }
+        }
+
         private void OnDrawGizmosSelected()
         {
 

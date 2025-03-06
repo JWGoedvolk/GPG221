@@ -9,6 +9,7 @@ public class Node : IComparable
     public Vector3Int GridPosition { get; set; }
     public bool IsWalkable { get; private set; }
     public bool IsVisited;
+    public int version = 0;
 
 #if ASTAR_DEBUG
     private GameObject nodeGO;
@@ -83,6 +84,7 @@ public class Node : IComparable
     {
         Node node = (Node)obj;
 
+        // TODO: Prioritise lowest fCost, then prioritise lowest hCost
         if (node.FCost > FCost)
         {
             return -1;

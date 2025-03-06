@@ -5,13 +5,14 @@ public class AI : MonoBehaviour
     AStar astar;
     bool pathIsFound = false;
     int nodeIndex = -1;
-    float speed = 5f;
+    [SerializeField] float speed = 5f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         astar = FindFirstObjectByType<AStar>();
         astar.PathFound += OnPathFound; // Subsribe to the delegate so we can run the AI as soon as we find a path
+        astar.restart += OnRestart; // Subscribe to delegate for restarting
     }
 
     void OnPathFound()
@@ -19,6 +20,11 @@ public class AI : MonoBehaviour
         pathIsFound = true;
         transform.position = astar.finalPath[0].WorldPosition;
         nodeIndex = 0;
+    }
+
+    void OnRestart()
+    {
+        pathIsFound = false;
     }
 
     // Update is called once per frame

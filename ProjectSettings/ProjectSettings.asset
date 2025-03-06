@@ -817,8 +817,9 @@ PlayerSettings:
   webGLCloseOnQuit: 0
   webWasm2023: 0
   scriptingDefineSymbols:
-    Standalone: 
-  additionalCompilerArguments: {}
+    Standalone: ASTAR_DEBUG
+  additionalCompilerArguments:
+    Standalone: []
   platformArchitecture: {}
   scriptingBackend:
     Android: 1

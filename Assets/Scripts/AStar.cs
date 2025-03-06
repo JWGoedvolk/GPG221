@@ -2,13 +2,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using JW.Grid;
 using AStarGrid = JW.Grid.AStarGrid;
-using UnityEngine.Experimental.GlobalIllumination;
 
 public class AStar : MonoBehaviour
 {
     public delegate void onPathFound();
     public onPathFound PathFound;
-    bool pathWasFound = false;
+    public bool pathWasFound = false;
+    bool autoRun = false;
 
     public delegate void onRestart();
     public onRestart restart;
@@ -24,13 +24,17 @@ public class AStar : MonoBehaviour
     Node startNode;
     Node goalNode;
     Node currentNode;
-    int loopCount = 0;
+
+    [SerializeField] LayerMask rayLayerMask;
+    [SerializeField] float rayDistance = 100f;
+    [SerializeField] GameObject hitMarker;
 
 #if ASTAR_DEBUG
     [SerializeField] Color neighbourColor;
     [SerializeField] Color startColor;
     [SerializeField] Color endColor;
     [SerializeField] Color currentColor;
+    [SerializeField] Color unwalkableColor;
     [SerializeField] float sphereSize = 0.1f;
 
 #endif
@@ -43,8 +47,8 @@ public class AStar : MonoBehaviour
         goalNode = grid.GetNode(endPosition);
 
 #if ASTAR_DEBUG
-        startNode.NodeGO.GetComponent<Renderer>().material.color = Color.blue;
-        goalNode.NodeGO.GetComponent<Renderer>().material.color = Color.white;
+        startNode.NodeGO.GetComponent<Renderer>().material.color = startColor;
+        goalNode.NodeGO.GetComponent<Renderer>().material.color = endColor;
 #endif
 
         openList.Add(startNode); // Add the starting node to the open list so we can start finding a path
@@ -55,13 +59,41 @@ public class AStar : MonoBehaviour
         // TODO: Re-add to debug
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            RestartAlgorythm();
-        }
-#if ASTAR_DEBUG
+            Camera cam = Camera.main;
+            RaycastHit hit;
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
 
-        if (Input.GetKeyDown(KeyCode.Backspace)) // Step by step looping through the allgorythm
+            if (Physics.Raycast(ray, out hit, rayDistance, rayLayerMask))
+            {
+                Vector3 hitPoint = hit.point;
+                hitPoint.y = 0f;
+
+                Node hitNode = grid.GetNode(hitPoint);
+                if (hitNode != null)
+                {
+                    if (hitNode.IsWalkable && Vector3Int.Distance(hitNode.GridPosition, goalNode.GridPosition) >= 2f)
+                    {
+                        endPosition = hitPoint;
+                        hitMarker.transform.position = hitPoint;
+                        RestartAlgorythm();
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Invalid end point selected");
+                    }
+                }
+            }
+        }
+
+#if ASTAR_DEBUG
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            autoRun = !autoRun;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Backspace) || (autoRun && openList.Count > 0)) // Step by step looping through the allgorythm
 #else
-        while (openList.Count > 0) // continue with the algorythm as long as we have nodes to visit
+        while (openList.Count > 0 && !pathWasFound) // continue with the algorythm as long as we have nodes to visit
 #endif
         {
             if (pathWasFound) // we exit the loop if the path is already found
@@ -69,11 +101,12 @@ public class AStar : MonoBehaviour
                 return;
             }
 
-            openList.Sort(); // Sort the list to have the first element be the Node with the lowest F cost, which is the shortest path so far
-            foreach (Node node in openList)
+            if (!goalNode.IsWalkable)
             {
-                print($"F: {node.FCost} | H: {node.HCost}");
+                return;
             }
+
+            openList.Sort(); // Sort the list to have the first element be the Node with the lowest F cost, which is the shortest path so far
             currentNode = openList[0];
             openList.Remove(currentNode); // We have looked at this node so take it out of the list of cells to visit
             currentNode.IsVisited = true;
@@ -81,14 +114,15 @@ public class AStar : MonoBehaviour
 #if ASTAR_DEBUG
             currentNode.NodeGO.GetComponent<Renderer>().material.color = currentColor;
 #endif
+            if (goalNode.WorldPosition.y != 0) goalNode.WorldPosition = new Vector3(goalNode.WorldPosition.x, 0f, goalNode.WorldPosition.z);
+            if (goalNode.GridPosition.y != 0) goalNode.GridPosition = new Vector3Int(goalNode.GridPosition.x, 0, goalNode.GridPosition.z);
 
             if (currentNode == goalNode || pathWasFound) // are we at the end or has a path been found
             {
                 FindFinalPath(goalNode); // Trace the path
-                print("Path Found!");
                 finalPath.Reverse(); // Reverse the found path as it traces back from the goal to the start. we want it from the start to the goal
                 PathFound(); // Dellegaate to let the AI know it can start moving
-
+                pathWasFound = true;
                 return;
             }
 
@@ -135,8 +169,12 @@ public class AStar : MonoBehaviour
                 neighbours[i].NodeGO.GetComponent<Renderer>().material.color = neighbourColor;
 #endif
 
-                // Go to next neighbour imediatly if this one is unwalkable or has been visited before
-                if ((!neighbours[i].IsWalkable || neighbours[i].IsVisited) && neighbours[i].version == version) 
+                // Go to next neighbour imediatly if this one is unwalkableColor or has been visited before
+                if (!neighbours[i].IsWalkable) 
+                {
+                    continue;
+                }
+                if (neighbours[i].version == version && neighbours[i].IsVisited)
                 {
                     continue;
                 }
@@ -145,6 +183,7 @@ public class AStar : MonoBehaviour
                 int newMovementPath = CalculateDistance(neighbours[i].GridPosition, currentNode.GridPosition) + currentNode.GCost; // The G cost of teh neighbour from the current tile. recallculated in case it was discovered more effeciently
                 if (neighbours[i].version != version) // we resstarted so ignore all previously assigned value and overwrite them
                 {
+                    print("neighbour has a different version");
                     neighbours[i].version = version; // Put the neighbour on the same version as the current itteration
 
                     // Update cost values
@@ -175,9 +214,20 @@ public class AStar : MonoBehaviour
                     }
                 }
 
+                if (neighbours[i].HCost == 1)
+                {
+                    neighbours[i].Parent = currentNode;
+                    goalNode.Parent = neighbours[i];
+                    currentNode = goalNode;
+                    pathWasFound = true;
+                    FindFinalPath(goalNode);
+                    finalPath.Reverse();
+                    PathFound();
+                    break;
+                }
+
                 if (neighbours[i] == goalNode)
                 {
-                    Debug.LogError("Goal is a neighbour");
                     goalNode.Parent = currentNode;
                     currentNode = goalNode;
                     pathWasFound = true;
@@ -188,11 +238,10 @@ public class AStar : MonoBehaviour
                 }
             }
 
-#if ASTAR_DEBUG
-            //print($"Current node grid pos: {currentNode.GridPosition}");
-            //print($"goal node grid pos: {goalNode.GridPosition}");
-            print($"is goal in openList: {openList.Contains(goalNode)}");
-#endif
+            if (pathWasFound)
+            {
+                return;
+            }
         }
     }
 
@@ -211,7 +260,6 @@ public class AStar : MonoBehaviour
 #endif
             if (node.Parent != null && !finalPath.Contains(node.Parent)) // Recursively call until either the parent is no longer there (goal shouldn't have a parent OR we loop back into the list
             {
-                print($"{node.WorldPosition} -> {node.Parent.WorldPosition}");
                 FindFinalPath(node.Parent);
             }
         }
@@ -226,20 +274,27 @@ public class AStar : MonoBehaviour
         finalPath = new(); // We don't know the new shortest path
         pathWasFound = false; // Continue the loop again
 
+
 #if ASTAR_DEBUG
         grid.RestartGrid();
 #endif
 
         // Resetting start and goal nodes
-        startPosition = currentNode.WorldPosition; // Start where you are now
+        startPosition = goalNode.WorldPosition; // Start where you are now
         startNode = grid.GetNode(startPosition);
         goalNode = grid.GetNode(endPosition);
         goalNode.Parent = null;
         startNode.version = version;
         goalNode.version = version;
 
+#if ASTAR_DEBUG
+        startNode.NodeGO.GetComponent<Renderer>().material.color = startColor;
+        goalNode.NodeGO.GetComponent<Renderer>().material.color = endColor;
+#endif
+
         // Re-add the starting node to the list of nodes to visit. this is to restart the loop again
         openList.Add(startNode);
+        print($"Version: {version}");
     }
 
 #if ASTAR_DEBUG
@@ -253,6 +308,61 @@ public class AStar : MonoBehaviour
 
         Gizmos.color = currentColor;
         if (currentNode != null) Gizmos.DrawSphere(currentNode.WorldPosition, sphereSize);
-    } 
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (grid == null)
+        {
+            grid = GetComponent<AStarGrid>();
+        }
+
+        if (grid != null)
+        {
+            // Calculate the grid position of the start and goal nodes
+            Vector3Int startGridPos = grid.WorldToGridPosition(startPosition);
+            Vector3Int goalGridPos = grid.WorldToGridPosition(endPosition);
+
+            // Go through the grid and draw it
+            for (int y = 0; y < grid.gridCountY; y++)
+            {
+                for (int x = 0; x < grid.gridCountX; x++)
+                {
+                    // Calculate position of the node
+                    Vector3 halfPoint = new Vector3((float)grid.cellSizeX / 2f, 0, (float)grid.cellSizeY / 2f);
+                    Vector3 worldPosition = new Vector3(x * grid.cellSizeX + halfPoint.x, 0, y * grid.cellSizeY + halfPoint.z);
+
+                    if (!Physics.CheckBox(worldPosition, halfPoint, grid.NodePrefab.transform.localRotation, grid.ObstacleLayer))
+                    {
+                        Gizmos.color = Color.white;
+                    }
+                    else
+                    {
+                        Gizmos.color = unwalkableColor;
+                    }
+
+                    // Set the collor if it is on the start, goal, or current node cell
+                    if (startGridPos.x == x && startGridPos.z == y)
+                    {
+                        Gizmos.color = startColor;
+                    }
+                    else if (goalGridPos.x == x && goalGridPos.z == y)
+                    {
+                        Gizmos.color = endColor;
+                    }
+                    else if (currentNode != null)
+                    {
+                        if (currentNode.GridPosition.x == x && currentNode.GridPosition.z == y)
+                        {
+                            Gizmos.color = currentColor;
+                        }
+                    }
+
+                    // Draw in a wire cube for the node
+                    Gizmos.DrawWireCube(worldPosition, new Vector3(grid.cellSizeX * .9f, 0f, grid.cellSizeY * .9f));
+                }
+            }
+        }
+    }
 #endif
 }

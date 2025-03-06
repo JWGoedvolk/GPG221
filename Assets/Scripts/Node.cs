@@ -85,18 +85,8 @@ public class Node : IComparable
         Node node = (Node)obj;
 
         // TODO: Prioritise lowest fCost, then prioritise lowest hCost
-        if (node.FCost == FCost)
-        {
-            if (node.hCost < hCost)
-            {
-                return 1;
-            }
-            else
-            {
-                return -1;
-            }
-        }
-        else if (node.FCost > FCost)
+        
+        if (node.FCost > FCost)
         {
             return -1;
         }

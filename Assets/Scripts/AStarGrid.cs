@@ -6,17 +6,16 @@ namespace JW.Grid
     {
         Node[] grid;
 
-        [SerializeField] public int gridCountX;
-        [SerializeField] public int gridCountY;
-        [SerializeField] public int cellSizeX;
-        [SerializeField] public int cellSizeY;
+        public int gridCountX;
+        public int gridCountY;
+        public int cellSizeX;
+        public int cellSizeY;
         [SerializeField] GameObject nodePrefab;
         [SerializeField] LayerMask obstacleLayer;
         int totalNodes;
 
-#if ASTAR_DEBUG
-        [SerializeField] Color unWalkable = Color.gray;
-#endif
+        public GameObject NodePrefab { get { return nodePrefab; } }
+        public LayerMask ObstacleLayer { get { return obstacleLayer; } }
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
@@ -45,15 +44,9 @@ namespace JW.Grid
                     node.transform.localScale = new Vector3(cellSizeX, 1, cellSizeY);
                     node.transform.parent = transform; // This makes the spawned node object a child of the grid object, helping the hierarchy stay clean
                     grid[i].NodeGO = node;
-
-                    if (!isWalkable)
-                    {
-                        grid[i].NodeGO.GetComponent<Renderer>().material.color = unWalkable;
-                    }
 #endif
                     grid[i].GCost = 0;
                     grid[i].HCost = 0;
-
                 }
             }
 
@@ -89,23 +82,6 @@ namespace JW.Grid
                 }
             }
         }
-
-        private void OnDrawGizmosSelected()
-        {
-
-            for (int y = 0; y < gridCountY; y++)
-            {
-                for (int x = 0; x < gridCountX; x++)
-                {
-                    // Calculate position of the node
-                    Vector3 halfPoint = new Vector3((float)cellSizeX / 2f, 0, (float)cellSizeY / 2f);
-                    Vector3 worldPosition = new Vector3(x * cellSizeX + halfPoint.x, 0, y * cellSizeY + halfPoint.z);
-
-                    // Draw in a wire cube for the node
-                    Gizmos.DrawWireCube(worldPosition, new Vector3(cellSizeX, 1f, cellSizeY));
-                }
-            }
-        }
 #endif
-    } 
+    }
 }

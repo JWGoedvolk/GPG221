@@ -5,7 +5,9 @@ public class AI : MonoBehaviour
     AStar astar;
     bool pathIsFound = false;
     int nodeIndex = -1;
+
     [SerializeField] float speed = 5f;
+    bool isRunning = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -20,11 +22,13 @@ public class AI : MonoBehaviour
         pathIsFound = true;
         transform.position = astar.finalPath[0].WorldPosition;
         nodeIndex = 0;
+        isRunning = true;
     }
 
     void OnRestart()
     {
         pathIsFound = false;
+        isRunning = false;
     }
 
     // Update is called once per frame
@@ -35,16 +39,23 @@ public class AI : MonoBehaviour
             return;
         }
 
-        float distanceToGoal = Vector3.Distance(astar.finalPath[nodeIndex].WorldPosition, transform.position); // Distance to next node
-        if (distanceToGoal <= 0.5f) // If we get within a certain range of the node, we go to the next one if possible
+        if (isRunning)
         {
-            if (nodeIndex < astar.finalPath.Count - 1)
+            float distanceToGoal = Vector3.Distance(astar.finalPath[nodeIndex].WorldPosition, transform.position); // Distance to next node
+            if (distanceToGoal <= 0.5f) // If we get within a certain range of the node, we go to the next one if possible
             {
-                nodeIndex++;
+                if (nodeIndex < astar.finalPath.Count - 1)
+                {
+                    nodeIndex++;
+                }
+                else
+                {
+                    isRunning = false;
+                }
             }
-        }
 
-        Vector3 direction = (astar.finalPath[nodeIndex].WorldPosition - transform.position).normalized; // Direction to the next node in the list
-        transform.position += direction * speed * Time.deltaTime;
+            Vector3 direction = (astar.finalPath[nodeIndex].WorldPosition - transform.position).normalized; // Direction to the next node in the list
+            transform.position += direction * speed * Time.deltaTime; 
+        }
     }
 }

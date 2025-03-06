@@ -71,7 +71,8 @@ public class AStar : MonoBehaviour
                 Node hitNode = grid.GetNode(hitPoint);
                 if (hitNode != null)
                 {
-                    if (hitNode.IsWalkable && Vector3Int.Distance(hitNode.GridPosition, goalNode.GridPosition) >= 2f)
+                    //  the new goal needs to be different and walkable
+                    if (hitNode.IsWalkable && hitNode != goalNode)
                     {
                         endPosition = hitPoint;
                         hitMarker.transform.position = hitPoint;
@@ -183,7 +184,6 @@ public class AStar : MonoBehaviour
                 int newMovementPath = CalculateDistance(neighbours[i].GridPosition, currentNode.GridPosition) + currentNode.GCost; // The G cost of teh neighbour from the current tile. recallculated in case it was discovered more effeciently
                 if (neighbours[i].version != version) // we resstarted so ignore all previously assigned value and overwrite them
                 {
-                    print("neighbour has a different version");
                     neighbours[i].version = version; // Put the neighbour on the same version as the current itteration
 
                     // Update cost values

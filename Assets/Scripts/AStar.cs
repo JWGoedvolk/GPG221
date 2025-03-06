@@ -52,11 +52,12 @@ public class AStar : MonoBehaviour
 
     private void Update()
     {
-#if ASTAR_DEBUG
+        // TODO: Re-add to debug
         if (Input.GetKeyDown(KeyCode.Space))
         {
             RestartAlgorythm();
         }
+#if ASTAR_DEBUG
 
         if (Input.GetKeyDown(KeyCode.Backspace)) // Step by step looping through the allgorythm
 #else
@@ -69,6 +70,10 @@ public class AStar : MonoBehaviour
             }
 
             openList.Sort(); // Sort the list to have the first element be the Node with the lowest F cost, which is the shortest path so far
+            foreach (Node node in openList)
+            {
+                print($"F: {node.FCost} | H: {node.HCost}");
+            }
             currentNode = openList[0];
             openList.Remove(currentNode); // We have looked at this node so take it out of the list of cells to visit
             currentNode.IsVisited = true;

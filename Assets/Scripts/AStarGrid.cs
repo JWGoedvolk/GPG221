@@ -10,9 +10,9 @@ namespace JW.Grid
         public int gridCountY;
         public int cellSizeX;
         public int cellSizeY;
+        int totalNodes;
         [SerializeField] GameObject nodePrefab;
         [SerializeField] LayerMask obstacleLayer;
-        int totalNodes;
 
         public GameObject NodePrefab { get { return nodePrefab; } }
         public LayerMask ObstacleLayer { get { return obstacleLayer; } }

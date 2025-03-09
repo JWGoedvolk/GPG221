@@ -83,8 +83,6 @@ public class Node : IComparable
     public int CompareTo(object obj)
     {
         Node node = (Node)obj;
-
-        // TODO: Prioritise lowest fCost, then prioritise lowest hCost
         
         if (node.FCost > FCost)
         {

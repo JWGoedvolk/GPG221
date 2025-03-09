@@ -8,10 +8,13 @@ public class AStar : MonoBehaviour
     public delegate void onPathFound();
     public onPathFound PathFound;
     public bool pathWasFound = false;
-    bool autoRun = false;
 
     public delegate void onRestart();
     public onRestart restart;
+
+#if ASTAR_DEBUG
+    bool autoRun = false;
+#endif
 
     AStarGrid grid;
 
@@ -56,7 +59,6 @@ public class AStar : MonoBehaviour
 
     private void Update()
     {
-        // TODO: Re-add to debug
         if (Input.GetKeyDown(KeyCode.Space))
         {
             Camera cam = Camera.main;
@@ -92,7 +94,7 @@ public class AStar : MonoBehaviour
             autoRun = !autoRun;
         }
 
-        if (Input.GetKeyDown(KeyCode.Backspace) || (autoRun && openList.Count > 0)) // Step by step looping through the allgorythm
+        if (Input.GetKeyDown(KeyCode.Backspace) && openList.Count > 0 || (autoRun && openList.Count > 0)) // Step by step looping through the allgorythm
 #else
         while (openList.Count > 0 && !pathWasFound) // continue with the algorythm as long as we have nodes to visit
 #endif
@@ -130,6 +132,7 @@ public class AStar : MonoBehaviour
             #region Finding Neighbours
             // Find neighbours
             List<Node> neighbours = new List<Node>();
+
             // Right neighbour
             Vector3Int rightNodeGridPosition = currentNode.GridPosition + new Vector3Int(1, 0, 0);
             if (rightNodeGridPosition.x < grid.gridCountX)
@@ -170,11 +173,7 @@ public class AStar : MonoBehaviour
                 neighbours[i].NodeGO.GetComponent<Renderer>().material.color = neighbourColor;
 #endif
 
-                // Go to next neighbour imediatly if this one is unwalkableColor or has been visited before
-                if (!neighbours[i].IsWalkable) 
-                {
-                    continue;
-                }
+                // Go to next neighbour imediatly if this one is has been visited before on this run
                 if (neighbours[i].version == version && neighbours[i].IsVisited)
                 {
                     continue;
@@ -267,7 +266,9 @@ public class AStar : MonoBehaviour
 
     void RestartAlgorythm()
     {
+#if ASTAR_DEBUG
         print("Restarting algorythm");
+#endif
         restart(); // Signal things that need to that we have restarted
         version++; 
         openList = new();  // Clear the list of nodes to visit
@@ -294,7 +295,6 @@ public class AStar : MonoBehaviour
 
         // Re-add the starting node to the list of nodes to visit. this is to restart the loop again
         openList.Add(startNode);
-        print($"Version: {version}");
     }
 
 #if ASTAR_DEBUG

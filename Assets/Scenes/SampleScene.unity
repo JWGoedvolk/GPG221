@@ -200,8 +200,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gridCountX: 20
   gridCountY: 20
-  cellSizeX: 2
-  cellSizeY: 2
+  cellSizeX: 4
+  cellSizeY: 4
   nodePrefab: {fileID: 2684766770930385517, guid: 4173b41e3e8c3d645b87df5f9d47bfc0, type: 3}
   obstacleLayer:
     serializedVersion: 2
@@ -231,7 +231,7 @@ MonoBehaviour:
   endColor: {r: 0, g: 0, b: 1, a: 1}
   currentColor: {r: 1, g: 1, b: 0, a: 1}
   unwalkableColor: {r: 0, g: 1, b: 1, a: 1}
-  sphereSize: 1
+  sphereSize: 0.1
 --- !u!1 &323999567
 GameObject:
   m_ObjectHideFlags: 0
@@ -1062,7 +1062,7 @@ Transform:
   m_GameObject: {fileID: 1828610382}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.70710576, z: -0, w: 0.70710784}
-  m_LocalPosition: {x: 0, y: 0, z: 17.4}
+  m_LocalPosition: {x: 2.3, y: 0, z: 17.4}
   m_LocalScale: {x: 178.68008, y: 1, z: 2.1928}
   m_ConstrainProportionsScale: 0
   m_Children: []

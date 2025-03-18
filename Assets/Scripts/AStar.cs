@@ -210,7 +210,7 @@ public class AStar : MonoBehaviour
 
                         // Only add it if it isn't already
                         if (!openList.Contains(neighbours[i])) openList.Add(neighbours[i]);
-                    }
+                    } 
                 }
 
                 if (neighbours[i].HCost == 1)
@@ -281,6 +281,7 @@ public class AStar : MonoBehaviour
 #endif
 
         // Resetting start and goal nodes
+        startNode.Parent = null;
         startPosition = goalNode.WorldPosition; // Start where you are now
         startNode = grid.GetNode(startPosition);
         goalNode = grid.GetNode(endPosition);
@@ -296,73 +297,4 @@ public class AStar : MonoBehaviour
         // Re-add the starting node to the list of nodes to visit. this is to restart the loop again
         openList.Add(startNode);
     }
-
-#if ASTAR_DEBUG
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = startColor;
-        Gizmos.DrawSphere(startPosition, sphereSize);
-
-        Gizmos.color = endColor;
-        Gizmos.DrawSphere(endPosition, sphereSize);
-
-        Gizmos.color = currentColor;
-        if (currentNode != null) Gizmos.DrawSphere(currentNode.WorldPosition, sphereSize);
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        if (grid == null)
-        {
-            grid = GetComponent<AStarGrid>();
-        }
-
-        if (grid != null)
-        {
-            // Calculate the grid position of the start and goal nodes
-            Vector3Int startGridPos = grid.WorldToGridPosition(startPosition);
-            Vector3Int goalGridPos = grid.WorldToGridPosition(endPosition);
-
-            // Go through the grid and draw it
-            for (int y = 0; y < grid.gridCountY; y++)
-            {
-                for (int x = 0; x < grid.gridCountX; x++)
-                {
-                    // Calculate position of the node
-                    Vector3 halfPoint = new Vector3((float)grid.cellSizeX / 2f, 0, (float)grid.cellSizeY / 2f);
-                    Vector3 worldPosition = new Vector3(x * grid.cellSizeX + halfPoint.x, 0, y * grid.cellSizeY + halfPoint.z);
-
-                    if (!Physics.CheckBox(worldPosition, halfPoint, grid.NodePrefab.transform.localRotation, grid.ObstacleLayer))
-                    {
-                        Gizmos.color = Color.white;
-                    }
-                    else
-                    {
-                        Gizmos.color = unwalkableColor;
-                    }
-
-                    // Set the collor if it is on the start, goal, or current node cell
-                    if (startGridPos.x == x && startGridPos.z == y)
-                    {
-                        Gizmos.color = startColor;
-                    }
-                    else if (goalGridPos.x == x && goalGridPos.z == y)
-                    {
-                        Gizmos.color = endColor;
-                    }
-                    else if (currentNode != null)
-                    {
-                        if (currentNode.GridPosition.x == x && currentNode.GridPosition.z == y)
-                        {
-                            Gizmos.color = currentColor;
-                        }
-                    }
-
-                    // Draw in a wire cube for the node
-                    Gizmos.DrawWireCube(worldPosition, new Vector3(grid.cellSizeX * .9f, 0f, grid.cellSizeY * .9f));
-                }
-            }
-        }
-    }
-#endif
 }

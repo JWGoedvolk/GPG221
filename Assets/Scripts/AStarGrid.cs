@@ -56,6 +56,11 @@ namespace JW.Grid
         {
             Vector3Int gridPosition = new Vector3Int((int)(worldPosition.x / cellSizeX), 0, (int)(worldPosition.z / cellSizeY));
             int i = gridPosition.x + gridPosition.z * gridCountX;
+            if (i < 0 || i >= totalNodes)
+            {
+                Debug.LogError("Attempted to get node outside the grid");
+                return null;
+            }
             return grid[i];
         }
 

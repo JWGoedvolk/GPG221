@@ -39,8 +39,9 @@ public class AStar : MonoBehaviour
     [SerializeField] Color currentColor;
     [SerializeField] Color unwalkableColor;
     [SerializeField] float sphereSize = 0.1f;
-
 #endif
+    
+    public Node GoalNode => goalNode;
 
     void Start()
     {
@@ -70,21 +71,7 @@ public class AStar : MonoBehaviour
                 Vector3 hitPoint = hit.point;
                 hitPoint.y = 0f;
 
-                Node hitNode = grid.GetNode(hitPoint);
-                if (hitNode != null)
-                {
-                    //  the new goal needs to be different and walkable
-                    if (hitNode.IsWalkable && hitNode != goalNode)
-                    {
-                        endPosition = hitPoint;
-                        hitMarker.transform.position = hitPoint;
-                        RestartAlgorythm();
-                    }
-                    else
-                    {
-                        Debug.LogWarning("Invalid end point selected");
-                    }
-                }
+                NewGoalDestination(hitPoint); // Set the hit point's node as the new goal
             }
         }
 
@@ -241,6 +228,31 @@ public class AStar : MonoBehaviour
             {
                 return;
             }
+        }
+    }
+
+    public bool NewGoalDestination(Vector3 goalPosition)
+    {
+        goalPosition.y = 0f; // Sanity check just in case
+        
+        Node newGoalNode = grid.GetNode(goalPosition); // Attempt to get the new node position
+        if (newGoalNode != null) // If the node exists
+        {
+            if (!newGoalNode.IsWalkable && newGoalNode != goalNode) // And it is walkable and not the current goal
+            {
+                // Then set it as the new goal and return success
+                endPosition = goalPosition;
+                RestartAlgorythm();
+                return true;
+            }
+            else // Otherwise it is not valid so return failure
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
         }
     }
 

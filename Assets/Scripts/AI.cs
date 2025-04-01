@@ -2,12 +2,16 @@ using UnityEngine;
 
 public class AI : MonoBehaviour
 {
-    AStar astar;
+    public AStar astar {get; private set;}
     bool pathIsFound = false;
     int nodeIndex = -1;
 
     [SerializeField] float speed = 5f;
     bool isRunning = false;
+    bool isAtGoal = false;
+    
+    public bool IsIdle => !isRunning;
+    public bool IsAtGoal => isAtGoal;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -51,6 +55,7 @@ public class AI : MonoBehaviour
                 else
                 {
                     isRunning = false;
+                    isAtGoal = true;
                 }
             }
 

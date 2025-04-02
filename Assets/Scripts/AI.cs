@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class AI : MonoBehaviour
 {
+    public delegate void OnGoalReached();
+    public static OnGoalReached OnGoalReachedEvent;
+    
     public AStar astar {get; private set;}
     bool pathIsFound = false;
     int nodeIndex = -1;
@@ -29,6 +32,12 @@ public class AI : MonoBehaviour
         isRunning = true;
     }
 
+    void GoalReached()
+    {
+        isAtGoal = true;
+        isRunning = false;
+    }
+
     void OnRestart()
     {
         pathIsFound = false;
@@ -45,7 +54,9 @@ public class AI : MonoBehaviour
 
         if (isRunning)
         {
-            float distanceToGoal = Vector3.Distance(astar.finalPath[nodeIndex].WorldPosition, transform.position); // Distance to next node
+            Vector3 nodePosition = astar.finalPath[nodeIndex].WorldPosition;
+            nodePosition.y = 1f;
+            float distanceToGoal = Vector3.Distance(nodePosition, transform.position); // Distance to next node
             if (distanceToGoal <= 0.5f) // If we get within a certain range of the node, we go to the next one if possible
             {
                 if (nodeIndex < astar.finalPath.Count - 1)
@@ -54,13 +65,13 @@ public class AI : MonoBehaviour
                 }
                 else
                 {
-                    isRunning = false;
-                    isAtGoal = true;
+                    GoalReached();
                 }
             }
 
             Vector3 direction = (astar.finalPath[nodeIndex].WorldPosition - transform.position).normalized; // Direction to the next node in the list
             transform.position += direction * speed * Time.deltaTime; 
+            transform.position = new Vector3(transform.position.x, 1f, transform.position.z);
         }
     }
 }

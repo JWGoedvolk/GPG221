@@ -1,25 +1,30 @@
 using UnityEngine;
 using TMPro;
 using System;
+using UnityEngine.UI;
 
+[System.Serializable]
 public class Node : IComparable
 {
-    public Node Parent { get; set; }
-    public Vector3 WorldPosition { get; set; }
-    public Vector3Int GridPosition { get; set; }
+    [SerializeField] public Node Parent { get; set; }
+    [SerializeField] public Vector3 WorldPosition { get; set; }
+    [SerializeField] public Vector3Int GridPosition { get; set; }
     public bool IsWalkable { get; private set; }
     public bool IsVisited;
     public int version = 0;
 
 #if ASTAR_DEBUG
     private GameObject nodeGO;
+    public Image Background;
     public TMP_Text gCostText;
     public TMP_Text hCostText;
     public TMP_Text fCostText;
+    public TMP_Text versionText;
 
-    [SerializeField] Color gColor = new Color(1, 0, 0);
-    [SerializeField] Color hColor = new Color(0, 1, 0);
-    [SerializeField] Color fColor = new Color(0, 0, 1);
+    Color gColor = new Color(.5f, 0, 0);
+    Color hColor = new Color(0, 1, 0);
+    Color fColor = new Color(0, 0, 1);
+    Color vColor = new Color(1, 1, 1);
 
     public GameObject NodeGO
     {
@@ -36,6 +41,11 @@ public class Node : IComparable
 
             fCostText = nodeGO.transform.GetChild(0).GetChild(2).GetComponent<TMP_Text>();
             fCostText.color = fColor;
+            
+            versionText = nodeGO.transform.GetChild(0).GetChild(3).GetComponent<TMP_Text>();
+            versionText.color = vColor;
+            
+            Background = nodeGO.transform.GetChild(1).GetChild(0).GetComponent<Image>();
         }
     }
 #endif
@@ -50,6 +60,12 @@ public class Node : IComparable
 #if ASTAR_DEBUG
             gCostText.text = value.ToString();
             fCostText.text = FCost.ToString();
+            versionText.text = version.ToString();
+            
+            if (IsVisited)
+            {
+                Background.color = Color.cyan;
+            }
 #endif
         }
     }
@@ -64,13 +80,25 @@ public class Node : IComparable
 #if ASTAR_DEBUG
             hCostText.text = value.ToString();
             fCostText.text = FCost.ToString();
+            versionText.text = version.ToString();
+            
+            if (IsVisited)
+            {
+                Background.color = Color.cyan;
+            }
 #endif
         }
     }
 
     public int FCost
     {
-        get { return gCost + hCost; }
+        get
+        {
+#if ASTAR_DEBUG
+            versionText.text = version.ToString();
+#endif
+            return gCost + hCost;
+        }
     }
 
     public Node(Vector3 worldPosition, Vector3Int gridPosition, bool isWalkable)
@@ -78,6 +106,7 @@ public class Node : IComparable
         WorldPosition = worldPosition;
         GridPosition = gridPosition;
         IsWalkable = isWalkable;
+        version = 0;
     }
 
     public int CompareTo(object obj)

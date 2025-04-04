@@ -5,25 +5,32 @@ namespace JW.Grid
 {
     public class AStarGrid : MonoBehaviour
     {
-        Node[] grid;
+        private Node[] grid;
 
         public int gridCountX;
         public int gridCountY;
         public int cellSizeX;
         public int cellSizeY;
-        int totalNodes => gridCountX * gridCountY;
-        [SerializeField] GameObject nodePrefab;
-        [SerializeField] LayerMask obstacleLayer;
+        public float HalfExtentHeight;
+        private int totalNodes
+        {
+            get
+            {
+                return gridCountX * gridCountY;
+            }
+        }
+        [SerializeField] private GameObject nodePrefab;
+        [SerializeField] private LayerMask obstacleLayer;
 
         public GameObject NodePrefab { get { return nodePrefab; } }
         public LayerMask ObstacleLayer { get { return obstacleLayer; } }
 
 #if ASTAR_DEBUG
-        public bool isGridSpawned = false;
+        public bool isGridSpawned;
 #endif
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
-        void Awake()
+        private void Awake()
         {
             SpawnGrid();
         }
@@ -39,7 +46,7 @@ namespace JW.Grid
                     int i = y * gridCountX + x;
 
                     // Calculate positions for world and grid space
-                    Vector3 halfPoint = new Vector3((float)cellSizeX/2f, .5f, (float)cellSizeY/2f);
+                    Vector3 halfPoint = new Vector3(cellSizeX / 2f, HalfExtentHeight / 2f, cellSizeY / 2f);
                     Vector3 worldPosition = new Vector3(x * cellSizeX + halfPoint.x, 0, y * cellSizeY + halfPoint.z);
                     Vector3Int gridPosition = new Vector3Int(x, 0, y);
 
@@ -48,7 +55,7 @@ namespace JW.Grid
 
                     grid[i] = new Node(worldPosition, gridPosition, isWalkable);
 #if ASTAR_DEBUG
-                    var node = Instantiate(nodePrefab, worldPosition, nodePrefab.transform.rotation);
+                    GameObject node = Instantiate(nodePrefab, worldPosition, nodePrefab.transform.rotation);
                     node.transform.localScale = new Vector3(cellSizeX, 1, cellSizeY);
                     node.transform.parent = transform; // This makes the spawned node object a child of the grid object, helping the hierarchy stay clean
                     grid[i].NodeGO = node;
@@ -74,14 +81,21 @@ namespace JW.Grid
             isGridSpawned = false;
         }
 #endif
-        
+
         public Node GetNode(Vector3 worldPosition)
         {
             Vector3Int gridPosition = new Vector3Int((int)(worldPosition.x / cellSizeX), 0, (int)(worldPosition.z / cellSizeY));
+
+            if (gridPosition.x < 0 || gridPosition.x >= gridCountX || gridPosition.z < 0 || gridPosition.z >= gridCountY)
+            {
+                Debug.LogWarning("Attempted to get node outside of grid bounds");
+                return null;
+            }
+
             int i = gridPosition.x + gridPosition.z * gridCountX;
             if (i < 0 || i >= totalNodes)
             {
-                Debug.LogError("Attempted to get node outside the grid");
+                Debug.LogWarning("Attempted to get node outside the grid");
                 return null;
             }
             return grid[i];
@@ -94,26 +108,31 @@ namespace JW.Grid
 
         public Vector3 GridToWorlPosition(Vector3Int gridPosition)
         {
-            return new Vector3((gridPosition.x * cellSizeX), 0, (gridPosition.z * cellSizeY));
+            return new Vector3(gridPosition.x * cellSizeX, 0, gridPosition.z * cellSizeY);
         }
+
+#if !ASTAR_DEBUG
+        private void OnDrawGizmos()
+        {
+            Vector3 gridBounds = new Vector3(cellSizeX * gridCountX, 1f, cellSizeY * gridCountY);
+            Vector3 offset = new Vector3(gridBounds.x / 2, 0, gridBounds.z / 2);
+            Gizmos.DrawWireCube(transform.position + offset, gridBounds);
+        }
+#endif
 
 #if ASTAR_DEBUG
         public void RestartGrid()
         {
-            for (int y= 0; y < gridCountY; y++)
+            for (int y = 0; y < gridCountY; y++)
             {
-                for (int x= 0; x < gridCountX; x++)
+                for (int x = 0; x < gridCountX; x++)
                 {
                     int i = y * gridCountX + x;
 
-                    grid[i].Background.color = grid[i].IsWalkable ? Color.black : Color.red;
+                    if (grid[i].IsWalkable) grid[i].Background.color = Color.black;
+                    else grid[i].Background.color = Color.red;
                 }
             }
-        }
-
-        private void OnDrawGizmos()
-        {
-            
         }
 #endif
     }

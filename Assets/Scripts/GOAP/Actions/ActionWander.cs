@@ -7,8 +7,8 @@ namespace JW.Grid.GOAP.Actions
 {
     public class ActionWander : ActionBase
     {
+        [Header("Wander Action")]
         [SerializeField] private int wanderRadius = 5;
-        private bool isGoalActivated;
         private List<Type> supportedGoals = new List<Type>() { typeof(GoalWander) };
 
         private void OnDrawGizmosSelected()
@@ -23,25 +23,14 @@ namespace JW.Grid.GOAP.Actions
 
         public override void OnActivated()
         {
-            if (!isGoalActivated) // Only activate it if it isn't already
-            {
                 Agent.PickWanderLocation(wanderRadius);
-                LinkedGoal.isGoalActivated = true;
-                isGoalActivated = true;
-            }
-        }
-
-        public override void OnDeactivated()
-        {
-            LinkedGoal.isGoalActivated = false;
-            isGoalActivated = false;
         }
 
         public override void OnTick(float dt)
         {
-            if (Agent.isAtGoal && !Agent.astar.CalculatingPath)
+            if (Agent.isAtGoal) // If we reach the goal
             {
-                Agent.PickWanderLocation(wanderRadius);
+                OnActivated(); // Then start again
             }
         }
     }

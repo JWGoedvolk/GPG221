@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using JW.Grid.GOAP;
 using JW.Grid.GOAP.Goals;
@@ -6,6 +7,8 @@ using UnityEditor;
 [CustomEditor(typeof(GOAPPlanner))]
 public class PlannerEditor : Editor
 {
+    bool ShowGoals = false;
+    bool ShowAvailableGoals = false;
     public override void OnInspectorGUI()
     {
         GOAPPlanner goap = (GOAPPlanner)target;
@@ -22,30 +25,49 @@ public class PlannerEditor : Editor
         // Show the current actions
         if (goap.currentAction != null)
         {
-            EditorGUILayout.Space(10);
             EditorGUILayout.LabelField($"Current Action: {goap.currentAction.GetType().Name}");
+            EditorGUILayout.Space(10);
         }
 
         if (goap.goals != null && goap.goals.Length > 0)
         {
-            EditorGUILayout.Space(10);
-            foreach (GoalBase goal in goap.goals)
+            ShowGoals = EditorGUILayout.Foldout(ShowGoals, "All Goals:");
+            if (ShowGoals)
             {
-                string goalName = goal.GetType().Name;
-                EditorGUILayout.LabelField($"Goal Name: {goalName}");
-                EditorGUILayout.LabelField($"  Goal Priority: {goal.CalculatePriority()}");
-                EditorGUILayout.LabelField($"  Goal Can Run: {goal.CanRun()}");
-                EditorGUILayout.LabelField($"  Goal Activated: {goal.isGoalActivated}");
-                EditorGUILayout.LabelField($"  Goal Complete: {goal.GoalCompleted}");
+                foreach (GoalBase goal in goap.goals)
+                {
+                    string goalName = goal.GetType().Name;
+                    EditorGUILayout.LabelField($"Goal Name: {goalName}");
+                    EditorGUILayout.LabelField($"  Goal Priority: {goal.CalculatePriority()}");
+                    EditorGUILayout.LabelField($"  Goal Can Run: {goal.CanRun()}");
+                    EditorGUILayout.LabelField($"  Goal Activated: {goal.isGoalActivated}");
+                    EditorGUILayout.LabelField($"  Goal Complete: {goal.GoalCompleted}");
+                }
+                EditorGUILayout.Space(10);
             }
-            EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("Available Goals:");
-            foreach (GoalBase runableGoal in goap.goals.Where(g => g.CanRun()))
+            
+            ShowAvailableGoals = EditorGUILayout.Foldout(ShowAvailableGoals, "Available Goals:");
+            if (ShowAvailableGoals)
             {
-                EditorGUILayout.LabelField($"  Goal Name: {runableGoal.GetType().Name}");
-                EditorGUILayout.LabelField($"  Goal Priority: {runableGoal.CalculatePriority()}");
+                foreach (GoalBase runableGoal in goap.goals.Where(g => g.CanRun()))
+                {
+                    EditorGUILayout.LabelField($"  Goal Name: {runableGoal.GetType().Name}");
+                    EditorGUILayout.LabelField($"  Goal Priority: {runableGoal.CalculatePriority()}");
+                }
             }
         }
+
+#if ASTAR_DEBUG
+        EditorGUILayout.Space(10);
+        EditorGUILayout.LabelField("Goals History:");
+        if (goap.GoalsHistory != null && goap.GoalsHistory.Count > 0)
+        {
+            foreach (var goal in goap.GoalsHistory)
+            {
+                EditorGUILayout.LabelField($"  Goal Name: {goal.GetType().Name}");
+            }
+        }
+#endif
 
         // TODO: Show the actions and their priorities, goals, etc.
     }

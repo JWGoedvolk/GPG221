@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using JW.Grid.GOAP.Actions;
 using JW.Grid.GOAP.Goals;
@@ -7,6 +9,10 @@ namespace JW.Grid.GOAP
 {
     public class GOAPPlanner : MonoBehaviour
     {
+        #if ASTAR_DEBUG
+        public List<GoalBase> GoalsHistory = new List<GoalBase>();
+        #endif
+        
         public GoalBase currentGoal;
         public ActionBase currentAction;
 
@@ -85,6 +91,10 @@ namespace JW.Grid.GOAP
                     // Set our goal and action
                     currentGoal = bestGoal;
                     currentAction = bestAction;
+                    
+                    #if ASTAR_DEBUG
+                    GoalsHistory.Add(currentGoal);
+                    #endif
 
                     // Activate them if they are not null
                     if (currentGoal != null)
@@ -116,6 +126,10 @@ namespace JW.Grid.GOAP
                     // Set the new ones
                     currentGoal = bestGoal;
                     currentAction = bestAction;
+                    
+#if ASTAR_DEBUG
+                    GoalsHistory.Add(currentGoal);
+#endif
 
                     // Activate them if we have them
                     if (currentGoal != null)

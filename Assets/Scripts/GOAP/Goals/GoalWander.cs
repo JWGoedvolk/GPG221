@@ -4,44 +4,26 @@ namespace JW.Grid.GOAP.Goals
 {
     public class GoalWander : GoalBase
     {
-        [SerializeField] private int minPriority;
-        [SerializeField] private int maxPriority = 20;
-        [SerializeField] private int startingPriority = 10;
-
+        [SerializeField] private float WanderPriority = 30f;
         [SerializeField] private float priorityBuildRate = 1f;
         [SerializeField] private float priorityDecayRate = .5f;
-        [SerializeField] private float currentPriority;
-
-        public override void Awake()
-        {
-            base.Awake();
-            currentPriority = startingPriority;
-        }
+        private float currentPriority;
 
         public override void OnGoalActivated()
         {   
-            currentPriority = maxPriority;
-            isGoalActivated = true;
-        }
-
-        public override void OnGoalDeactivated()
-        {
-            currentPriority = minPriority;
-            isGoalActivated = false;
+            currentPriority = WanderPriority;
         }
 
         public override void OnGoalTick()
         {
-            if (!isGoalActivated)
+            if (Agent.IsRunning)
             {
-                currentPriority += priorityBuildRate;
+                currentPriority -= priorityDecayRate * Time.deltaTime;
             }
             else
             {
-                currentPriority -= priorityDecayRate;
+                currentPriority += priorityBuildRate * Time.deltaTime;
             }
-
-            currentPriority = Mathf.Clamp(currentPriority, 0, maxPriority);
         }
 
         public override int CalculatePriority()
@@ -52,7 +34,7 @@ namespace JW.Grid.GOAP.Goals
         public override bool CanRun()
         {
             // TODO: Change the logic to be so the AI can wander if it is not currently moving and stats stuff
-            bool canRun = (!Agent.IsRunning && !Agent.astar.pathWasFound && !Agent.astar.CalculatingPath) || isGoalActivated;
+            bool canRun = !(Agent.IsInHealthRange() || Agent.IsInStaminaRange()); // Can  run if we aren't near a stat increaser
             GoalCanRun = canRun;
             return canRun;
         }

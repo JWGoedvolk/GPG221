@@ -5,10 +5,10 @@ namespace JW.Grid.GOAP.Goals
     [RequireComponent(typeof(AI))]
     public class GoalBase : MonoBehaviour, IGoal
     {
-        public bool GoalCanRun;
-        public bool GoalCompleted;
-        public bool isGoalActivated;
-
+        [Header("")]
+        [HideInInspector] public bool GoalCanRun;
+        [HideInInspector] public bool GoalCompleted;
+        [HideInInspector] public bool isGoalActivated;
         protected AI Agent;
         // TODO: Create and add awareness system
 

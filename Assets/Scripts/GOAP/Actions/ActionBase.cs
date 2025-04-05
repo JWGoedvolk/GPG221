@@ -7,10 +7,8 @@ namespace JW.Grid.GOAP.Actions
 {
     public class ActionBase : MonoBehaviour
     {
+        [Header("Base Action")]
         public int Cost;
-        // TODO: Create and add awareness system
-
-        public GoalBase LinkedGoal;
         protected AI Agent;
         private void Awake()
         {

@@ -3,12 +3,11 @@ using TMPro;
 using System;
 using UnityEngine.UI;
 
-[System.Serializable]
 public class Node : IComparable
 {
-    [SerializeField] public Node Parent { get; set; }
-    [SerializeField] public Vector3 WorldPosition { get; set; }
-    [SerializeField] public Vector3Int GridPosition { get; set; }
+    public Node Parent { get; set; }
+    public Vector3 WorldPosition { get; set; }
+    public Vector3Int GridPosition { get; set; }
     public bool IsWalkable { get; private set; }
     public bool IsVisited;
     public int version = 0;
@@ -16,10 +15,10 @@ public class Node : IComparable
 #if ASTAR_DEBUG
     private GameObject nodeGO;
     public Image Background;
-    public TMP_Text gCostText;
-    public TMP_Text hCostText;
-    public TMP_Text fCostText;
-    public TMP_Text versionText;
+    private TMP_Text gCostText;
+    private TMP_Text hCostText;
+    private TMP_Text fCostText;
+    private TMP_Text versionText;
 
     Color gColor = new Color(.5f, 0, 0);
     Color hColor = new Color(0, 1, 0);

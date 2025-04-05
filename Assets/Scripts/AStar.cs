@@ -241,6 +241,13 @@ public class AStar : MonoBehaviour
         }
     }
 
+    public void TermintatePath(int nodeIndex)
+    {
+        currentNode = finalPath[nodeIndex];
+        ShouldRun = false;
+        CalculatingPath = false;
+    }
+
     /// <summary>
     /// </summary>
     /// <param name="goalPosition"></param>
@@ -255,7 +262,11 @@ public class AStar : MonoBehaviour
         Node newGoalNode = grid.GetNode(goalPosition); // Attempt to get the new node position
         if (newGoalNode != null) // If the node exists
         {
-            if (newGoalNode.IsWalkable && newGoalNode != GoalNode) // And it is walkable and not the current goal
+            if (!newGoalNode.IsWalkable)
+            {
+                return 0;
+            }
+            if (newGoalNode.IsWalkable && newGoalNode != GoalNode || newGoalNode != currentNode) // And it is walkable and not the current goal
             {
 #if ASTAR_DEBUG
                 // Reset our cycles
@@ -270,7 +281,7 @@ public class AStar : MonoBehaviour
 
                 // Reset parents
                 startNode.Parent = null;
-                GoalNode.Parent = null;
+                if (GoalNode != null) GoalNode.Parent = null;
 
                 // Reset positions
                 startPosition = transform.position;
@@ -394,7 +405,7 @@ public class AStar : MonoBehaviour
             {
                 // Calculate positions for world and grid space
                 Vector3 halfPoint = new Vector3(grid.cellSizeX / 2f, halfExtentHeight, grid.cellSizeY / 2f);
-                Vector3 worldPosition = new Vector3(x * grid.cellSizeX + halfPoint.x, -1, y * grid.cellSizeY + halfPoint.z);
+                Vector3 worldPosition = new Vector3(x * grid.cellSizeX + halfPoint.x, 0, y * grid.cellSizeY + halfPoint.z);
 
                 bool isWalkable = !Physics.CheckBox(worldPosition, halfPoint, grid.NodePrefab.transform.localRotation, grid.ObstacleLayer);
 

@@ -9,7 +9,6 @@ namespace JW.Grid.GOAP.Actions
     {
         private List<Type> supportedGoals = new List<Type>() { typeof(GoalIdle) };
         
-
         public override List<Type> GetSupportedGoals()
         {
             return supportedGoals;

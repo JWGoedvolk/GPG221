@@ -18,8 +18,8 @@ namespace JW.Grid.GOAP
 
         public ActionBase[] actions;
         public GoalBase[] goals;
-        [SerializeField] private float currentTime;
 
+        [SerializeField] private float currentTime;
         [SerializeField] private float planInterval = 5f;
 
         private void Awake()
@@ -30,12 +30,8 @@ namespace JW.Grid.GOAP
 
         private void FixedUpdate()
         {
-            currentTime += Time.fixedDeltaTime;
-            if (currentTime >= planInterval)
-            {
-                currentTime = 0;
-
-                // Get the best goal and its actions to achieve it
+            
+            // Get the best goal and its actions to achieve it
                 GoalBase bestGoal = null;
                 ActionBase bestAction = null;
 
@@ -141,7 +137,7 @@ namespace JW.Grid.GOAP
                         currentAction.OnActivated();
                     }
                 }
-            }
+            
             
             // Update the current action if we have one
             if (currentAction != null)

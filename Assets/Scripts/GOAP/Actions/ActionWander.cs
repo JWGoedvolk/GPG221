@@ -23,7 +23,7 @@ namespace JW.Grid.GOAP.Actions
 
         public override void OnActivated()
         {
-                Agent.PickWanderLocation(wanderRadius);
+            Agent.PickWanderLocation(wanderRadius);
         }
 
         public override void OnTick(float dt)

@@ -26,11 +26,7 @@ namespace JW.Grid.GOAP.Goals
             {
                 currentPriority = urgentPriority;
             }
-            else if (Agent.stamina >= content) // we have enough stamina to not worry anymore
-            {
-                currentPriority = contentPriority;
-            }
-            else if (Agent.stamina >= urgent && Agent.stamina <= content) // We are in a sweet spot
+            else if (Agent.stamina >= Agent.MaxStamina) // we have enough stamina to not worry anymore
             {
                 currentPriority = restPriority;
             }
@@ -44,7 +40,7 @@ namespace JW.Grid.GOAP.Goals
         public override bool CanRun()
         {
             // TODO: Change the logic to be so the AI can wander if it is not currently moving and stats stuff
-            GoalCanRun = Agent.stamina <= urgent;
+            GoalCanRun = Agent.stamina <= urgent * 1.2f;
             return GoalCanRun;
         }
     }

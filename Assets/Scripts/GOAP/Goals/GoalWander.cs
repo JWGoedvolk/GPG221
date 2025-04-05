@@ -7,7 +7,7 @@ namespace JW.Grid.GOAP.Goals
         [SerializeField] private float WanderPriority = 30f;
         [SerializeField] private float priorityBuildRate = 1f;
         [SerializeField] private float priorityDecayRate = .5f;
-        private float currentPriority;
+        private float currentPriority = 30f;
 
         public override void OnGoalActivated()
         {   
@@ -34,9 +34,8 @@ namespace JW.Grid.GOAP.Goals
         public override bool CanRun()
         {
             // TODO: Change the logic to be so the AI can wander if it is not currently moving and stats stuff
-            bool canRun = !(Agent.IsInHealthRange() || Agent.IsInStaminaRange()); // Can  run if we aren't near a stat increaser
-            GoalCanRun = canRun;
-            return canRun;
+            GoalCanRun = true;
+            return GoalCanRun;
         }
     }
 }

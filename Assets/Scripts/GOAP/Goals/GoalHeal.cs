@@ -29,10 +29,6 @@ namespace JW.Grid.GOAP.Goals
             {
                 currentPriority = contentPriority;
             }
-            else if (Agent.health >= urgent && Agent.health <= content) // We are in a sweet spot
-            {
-                currentPriority = healPriority;
-            }
         }
 
         public override int CalculatePriority()

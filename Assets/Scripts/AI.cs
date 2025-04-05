@@ -7,8 +7,12 @@ public class AI : MonoBehaviour
     public delegate void OnGoalReached();
     public static OnGoalReached OnGoalReachedEvent;
 
+    [Header("Movement")]
     [SerializeField] private float speed = 5f;
     [SerializeField] private float distanceThreshold = 0.1f;
+    [SerializeField] private Transform statReturn;
+    
+    [Header("States")]
     public bool IsRunning;
     public bool isAtGoal;
     private int nodeIndex = -1;
@@ -17,6 +21,8 @@ public class AI : MonoBehaviour
     [Header("UI")]
     [SerializeField] private TMP_Text staminaText;
     [SerializeField] private TMP_Text healthText;
+    
+    [Header("Stats")]
     [SerializeField] public float stamina;
     [SerializeField] private float maxStamina;
     [SerializeField] private float staminaPerNode = 0.2f;
@@ -27,8 +33,8 @@ public class AI : MonoBehaviour
     [Header("Sensors")]
     [SerializeField] private BaseSensor staminaSensor;
     [SerializeField] private BaseSensor healthSensor;
-    
-    public AStar astar { get; private set; }
+
+    public AStar astar;
     
     public float MaxHealth => maxHealth;
     public float MaxStamina => maxStamina;
@@ -36,7 +42,7 @@ public class AI : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     private void Start()
     {
-        astar = FindFirstObjectByType<AStar>();
+        astar = GetComponent<AStar>();
         astar.PathFound += OnPathFound; // Subscribe to the delegate so we can run the AI as soon as we find a path
         astar.restart += OnRestart; // Subscribe to delegate for restarting
     }
@@ -45,18 +51,44 @@ public class AI : MonoBehaviour
     private void Update()
     {
         // If in range of heal or stamina providers, increase thee stats
-        if (IsInHealthRange())
+        if (IsInHealthRange() && isAtGoal)
         {
-            health += healthPerNode * Time.deltaTime;
+            health = maxHealth;
+            MoveTo(statReturn.position);
+            if (staminaPerNode > healthPerNode)
+            {
+                healthPerNode = 0.5f;
+                staminaPerNode = 0.1f;
+            }
+            else
+            {
+                healthPerNode = 0.1f;
+                staminaPerNode = 0.5f;
+            }
         }
-        if (IsInStaminaRange())
+        if (IsInStaminaRange() && isAtGoal)
         {
-            stamina += staminaPerNode * Time.deltaTime;
+            stamina += maxStamina;
+            MoveTo(statReturn.position);
+            if (staminaPerNode > healthPerNode)
+            {
+                healthPerNode = 0.5f;
+                staminaPerNode = 0.1f;
+            }
+            else
+            {
+                healthPerNode = 0.1f;
+                staminaPerNode = 0.5f;
+            }
         }
         
         // Clamp the stats so they don't go crazy
         stamina = Mathf.Clamp(stamina, 0f, maxStamina);
         health = Mathf.Clamp(health, 0f, maxHealth);
+        
+        // Update the UI with the new stats
+        staminaText.text = $"{Mathf.FloorToInt(stamina)}";
+        healthText.text = $"{Mathf.FloorToInt(health)}";
         
         if (!pathIsFound) // Don't bother starting until we have a path
         { 
@@ -94,9 +126,9 @@ public class AI : MonoBehaviour
     private void OnPathFound()
     {
         pathIsFound = true;
-        transform.position = astar.finalPath[0].WorldPosition;
         nodeIndex = 0;
         IsRunning = true;
+        isAtGoal = false;
     }
 
     private void GoalReached()
@@ -115,7 +147,6 @@ public class AI : MonoBehaviour
     {
         IsRunning = false;
         isAtGoal = true;
-        transform.position = astar.finalPath[nodeIndex].WorldPosition; // Set our stating position to the current node
     }
 
     public bool IsInStaminaRange()
@@ -148,10 +179,11 @@ public class AI : MonoBehaviour
     {
         if (astar.CalculatingPath && !astar.pathWasFound && !astar.ShouldRun) return; // Only allow a wandering location to be picked if we are not still calculating a path
 
-        if (IsRunning || !isAtGoal)
+        if (IsRunning)
         {
             StopAgent(); // Stop the agent if needed
         }
+        
         
         // Please tell me there's another way that doesn't feel absolutely scuffed XD
         PickLocationStart:
@@ -175,8 +207,7 @@ public class AI : MonoBehaviour
                 Debug.LogWarning("Location picked Successfully");
                 goto PickLocationEnd;
         }
-        PickLocationEnd:
-        Debug.Log("Good node picked");
+        PickLocationEnd: ;
     }
 
     private void OnDrawGizmos()

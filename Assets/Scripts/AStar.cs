@@ -8,13 +8,17 @@ public class AStar : MonoBehaviour
 {
     public delegate void onPathFound();
     public delegate void onRestart();
-    [Header("States")] public bool pathWasFound;
+    public onPathFound PathFound;
+    public onRestart restart;
+    [Header("States")] 
+    public bool pathWasFound;
     public bool ShouldRun;
     public bool CalculatingPath;
 
     [SerializeField] private AStarGrid grid;
 
-    [Header("Positions")] [SerializeField] private Vector3 startPosition;
+    [Header("Positions")] 
+    [SerializeField] private Vector3 startPosition;
     [SerializeField] private Vector3 endPosition;
 #if ASTAR_DEBUG
     [SerializeField]
@@ -26,14 +30,24 @@ public class AStar : MonoBehaviour
 
 #if ASTAR_DEBUG
     [SerializeField] private bool autoRun;
+    public float halfExtentHeight = 1f;
+#endif
+    
+#if ASTAR_DEBUG
+    [Header("New Destination")]
+    [SerializeField] private LayerMask rayLayerMask;
+    [SerializeField] private float rayDistance = 100f;
+    [SerializeField] private GameObject hitMarker;
+    [Header("Debug")] [SerializeField] private Color neighbourColor;
+    [SerializeField] private Color startColor;
+    [SerializeField] private Color endColor;
+    [SerializeField] private Color currentColor;
+    [SerializeField] private Color unwalkableColor;
+    [SerializeField] private bool isGridDrawn;
+    [SerializeField] private int numCycles;
 #endif
 
-
-    public float halfExtentHeight = 1f;
     private Node currentNode;
-    public onPathFound PathFound;
-    public onRestart restart;
-
     private Node startNode;
     private int version;
     private bool isAIMoving
@@ -53,7 +67,6 @@ public class AStar : MonoBehaviour
         startPosition = transform.position;
         startNode = grid.GetNode(startPosition);
         GoalNode = grid.GetNode(endPosition);
-
 
 #if ASTAR_DEBUG
         startNode.Background.color = startColor;
@@ -371,18 +384,7 @@ public class AStar : MonoBehaviour
         // Re-add the starting node to the list of nodes to visit. this is to restart the loop again
         openList.Add(startNode);
     }
-#if ASTAR_DEBUG
-    [SerializeField] private LayerMask rayLayerMask;
-    [SerializeField] private float rayDistance = 100f;
-    [SerializeField] private GameObject hitMarker;
-    [Header("Debug")] [SerializeField] private Color neighbourColor;
-    [SerializeField] private Color startColor;
-    [SerializeField] private Color endColor;
-    [SerializeField] private Color currentColor;
-    [SerializeField] private Color unwalkableColor;
-    [SerializeField] private bool isGridDrawn;
-    [SerializeField] private int numCycles;
-#endif
+
 
 #if ASTAR_DEBUG
     private void OnPathFound()
